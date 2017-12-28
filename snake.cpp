@@ -1,12 +1,14 @@
 #include <cheerp/clientlib.h>
 #include <iostream>
+#include <stdlib.h>     /* srand, rand */
 #include <cheerp/client.h>
 #include <math.h>
-#include <math.h>
+#include <chrono>
 using namespace client;
 using namespace std;
 
 void mainLoop();
+
 
 class [[cheerp::genericjs]] Graphics{
   private:
@@ -43,9 +45,9 @@ class [[cheerp::genericjs]] Graphics{
   	}
 };
 
-const int unitSpeed = 4;
-const int maxWidth = 800;
-const int maxHeight = 600;
+const int unitSpeed = 10;
+const int maxWidth = 1024;
+const int maxHeight = 768;
 
 class Box {
 private:
@@ -54,13 +56,18 @@ private:
 
 public:
   Box() {
-    posX = 0;
-    posY = 0;
+    posX = -10;
+    posY = -10;
   }
   Box(int x, int y){
     posX = x;
     posY = y;
   }
+
+  void render(){
+    Graphics::drawRect(posX, posY, 10, 10, 0xffffff);
+  }
+
   void setCoords(int x, int y){
     posX = x;
     posY = y;
@@ -93,8 +100,20 @@ public:
     dY = 0;
     for (int i= 0; i < current_length; i++) {
       boxes[i].setCoords((posX-i * 10), posY);
+      }
     }
-    }
+
+  int getX(){
+    return posX;
+  }
+
+  int getY() {
+    return posY;
+  }
+
+  void incCurrentLength(){
+    current_length += 10;
+  }
 
   void render(){
     posX += dX;
@@ -106,7 +125,7 @@ public:
     }
     boxes[0].setCoords(posX, posY);
     for (int i = 0; i < current_length; i++){
-      Graphics::drawRect(boxes[i].getX(), boxes[i].getY(), 10, 10, 0xffffff);
+      boxes[i].render();
     }
   }
 
@@ -137,10 +156,10 @@ public:
       dY = unitSpeed;
     }
   };
-
 };
 
 Snake snake;
+Box food;
 void Graphics::keyDownHandler(KeyboardEvent *e){
 	if(e-> get_keyCode() == 37){
 		snake.moveLeft();
@@ -155,11 +174,23 @@ void Graphics::keyDownHandler(KeyboardEvent *e){
 }
 
 void mainLoop(){
+  if ((abs(snake.getX()-food.getX())< 10) && (abs(snake.getY()-food.getY())< 10)){
+    snake.incCurrentLength();
+    int now = snake.getX() * 2 ;
+    int ranXAxis = now % maxWidth;
+    int ranYAxis = now % maxHeight;
+    food.setCoords(ranXAxis,ranYAxis);
+  }
 	Graphics::drawRect(0, 0, maxWidth, maxHeight, 0x000000);
   snake.render();
+  food.render();
 }
 
 void webMain(){
 	Graphics::initializeCanvas(maxWidth, maxHeight );
   snake = Snake(100,100);
+  int now = snake.getX() * 2 ;
+  int ranXAxis = now % maxWidth;
+  int ranYAxis = now % maxHeight;
+  food = Box(ranXAxis,ranYAxis);
 }
