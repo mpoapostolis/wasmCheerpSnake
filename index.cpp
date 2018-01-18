@@ -5,6 +5,7 @@
 
 #define REC_SQRT2 0.7071067811865475
 
+int x = 0;
 enum input_state {
     NOTHING_PRESSED = 0,
     UP_PRESSED = 1,
@@ -15,7 +16,8 @@ enum input_state {
 
 struct context {
     SDL_Renderer *renderer;
-    SDL_Rect dest;
+    SDL_Rect window;
+    SDL_Rect sprite;
     SDL_Texture *owl_tex;
     int active_state;
     int owl_vx;
@@ -26,14 +28,26 @@ struct context {
  * Loads the owl texture into the context
  */
 int get_owl_texture(struct context * ctx) {
-  SDL_Surface *image = IMG_Load("assets/actor.gif");
+  SDL_Surface *image;
+
+  if (ctx->owl_vx < 0) {
+    image = IMG_Load("assets/actorB.png");
+  }
+
+  if(ctx->owl_vx > 0){
+    image = IMG_Load("assets/actor.png");
+  }
+
   if (!image) {
      printf("IMG_Load: %s\n", IMG_GetError());
      return 0;
   }
   ctx->owl_tex = SDL_CreateTextureFromSurface(ctx->renderer, image);
-  ctx->dest.w = image->w;
-  ctx->dest.h = image->h;
+  ctx->window.w = (image->w)/8;
+  ctx->window.h = image->h;
+  ctx->sprite.w = (image->w)/8;
+  ctx->sprite.h = image->h;
+
   SDL_FreeSurface (image);
   return 1;
 }
@@ -87,6 +101,11 @@ void process_input(struct context *ctx){
         ctx->owl_vx = -5;
     if (ctx->active_state & RIGHT_PRESSED)
         ctx->owl_vx = 5;
+    if (!ctx->owl_vx && !ctx->owl_vy) {
+      x = 0;
+    } else {
+      x++;
+    }
 
     if (ctx->owl_vx != 0 && ctx->owl_vy != 0) {
         ctx->owl_vx *= REC_SQRT2;
@@ -100,12 +119,14 @@ void loop_handler(void *arg) {
     int vx = 0;
     int vy = 0;
     process_input(ctx);
+    get_owl_texture(ctx);
 
-    ctx->dest.x += ctx->owl_vx;
-    ctx->dest.y += ctx->owl_vy;
-    printf("%d %d\n", ctx->dest.x, ctx->dest.y);
+    ctx->sprite.x = (x % 8) * ctx->sprite.w;
+    ctx->window.x += ctx->owl_vx;
+    ctx->window.y += ctx->owl_vy;
+    printf("%d %d\n", ctx->window.x, ctx->window.y);
     SDL_RenderClear(ctx->renderer);
-    SDL_RenderCopy(ctx->renderer, ctx->owl_tex, NULL, &ctx->dest);
+    SDL_RenderCopy(ctx->renderer, ctx->owl_tex, &ctx->sprite, &ctx->window);
     SDL_RenderPresent(ctx->renderer);
 }
 
@@ -119,8 +140,6 @@ int main() {
 
     get_owl_texture(&ctx);
     ctx.active_state = NOTHING_PRESSED;
-    ctx.dest.x = 200;
-    ctx.dest.y = 100;
     ctx.owl_vx = 0;
     ctx.owl_vy = 0;
 
