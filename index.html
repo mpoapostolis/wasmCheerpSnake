@@ -1,11 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
+<html>
+    <head>
     <meta charset="utf-8">
-    <title>Cheerp test</title>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <script src="pong.js"></script>
-  </body>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" type="text/css" href="index.css">
+    </head>
+    <body>
+      <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+      <p id="fullScreenButton" onclick="Module.requestFullScreen(true, false)">full screen</p>
+    <script src="loadWasm.js"></script>
+    </body>
 </html>
