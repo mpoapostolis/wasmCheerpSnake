@@ -1,6 +1,8 @@
 window.Module = {
   canvas: (function() {
     var canvas = document.getElementById("canvas");
+    canvas.height = window.innerHeight
+    canvas.width = window.innerWidth
     return canvas;
   })(),
 };
